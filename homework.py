@@ -1,5 +1,6 @@
-import datetime as dt
-from typing import List, Optional
+import datetime as dt  # for data type to be used
+from typing import List, Optional  # for showing type of the variable
+# TODO/ grab usd and euro rate from web
 # import requests
 # from bs4 import BeautifulSoup as bs
 
@@ -8,9 +9,9 @@ class Calculator():
     """Main class for both calculators.
        Parent class to CashCalculator
        and CaloriesCalculator."""
-    def __init__(self, limit: float, records: List['Record'] = []) -> None:
+    def __init__(self, limit: float) -> None:
         self.limit = limit
-        self.records = records
+        self.records: List['Record'] = []
 
     def add_record(self, inp_record: 'Record') -> bool:
         """Adds object of type record to the list."""
@@ -23,6 +24,7 @@ class Calculator():
         count_day: float = 0
         dt_now = dt.datetime.now()
 
+        # Summ all records of amount (callories/Cash) where day = today.
         for record in self.records:
             if record.date == dt_now.date():
                 count_day = count_day + record.amount
@@ -35,11 +37,13 @@ class Calculator():
 
         week_ago: dt.datetime = dt.datetime.now() - dt.timedelta(days=7)
         week_ago: dt.date = week_ago.date()
-        week_ago
         count_week: float = 0
 
+        # Summ all records of amount (callories/Cash) where
+        # day = one of the previous 7 days inclusive.
         for record in self.records:
-            if record.date > week_ago:
+            if (record.date >= week_ago and record.date
+               <= dt.datetime.now().date()):
                 count_week = count_week + record.amount
 
         return count_week
@@ -58,6 +62,8 @@ class CashCalculator(Calculator):
     def converter(self, currencyTo: str, inpAmount: float) -> float:
         """Converst rubles to dollars or euro using information
            from yandex.ru and returns answer to 2dp."""
+
+        # TODO/ Grab usd and euro rate from web.
         # url = 'https://yandex.ru/'
         # headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
         #            + 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.'
@@ -87,6 +93,8 @@ class CashCalculator(Calculator):
         remaining: float = lmt - gts
         debt: float = gts - lmt
 
+        # Convert currency and rename for better look.
+        # Raises error if gets unknown currency.
         if currency == 'eur':
             remaining = self.converter(currency, remaining)
             debt = self.converter(currency, debt)
@@ -100,6 +108,8 @@ class CashCalculator(Calculator):
         else:
             raise ValueError('такая валюта не доступна')
 
+        # Compere's money spends today and comperes to limit that was set.
+        # Returns msg string accordingly.
         if gts < lmt:
             return f'На сегодня осталось {remaining} {currency}'
         elif self.get_today_stats() == lmt:
@@ -120,6 +130,8 @@ class CaloriesCalculator(Calculator):
         limit = self.limit
         remaining = limit - self.get_today_stats()
 
+        # Compere's calories consumed today and comperes to limit that was set.
+        # Returns msg string accordingly.
         if self.get_today_stats() < limit:
             return ('Сегодня можно съесть что-нибудь ещё, '
                     + f'но с общей калорийностью не более {remaining} кКал')
@@ -144,38 +156,3 @@ class Record:
         else:
             date = dt.datetime.now().date()
         self.date = date
-
-
-cash_calculator = CashCalculator(6000)
-cash_calculator2 = CashCalculator(2000)
-cal_calculator = CaloriesCalculator(2000)
-
-# дата в параметрах не указана,
-# так что по умолчанию к записи
-# должна автоматически добавиться сегодняшняя дата
-cash_calculator.add_record(Record(amount=500, comment='кофе'))
-cash_calculator2.add_record(Record(amount=500, comment='кофе2'))
-cash_calculator.add_record(Record(amount=0, comment='чай'))
-cash_calculator.add_record(Record(amount=0, comment='чай'))
-# и к этой записи тоже дата должна добавиться автоматически
-cash_calculator.add_record(Record(amount=2500, comment='Серёге за обед'))
-# а тут пользователь указал дату, сохраняем её
-cash_calculator.add_record(Record(amount=3000,
-                                  comment='бар в Танин др',
-                                  date='26.08.2021'))
-
-# week
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='24.08.2021'))
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='24.08.2021'))
-
-# 3
-
-print(cash_calculator.get_week_stats())
-print(cash_calculator.get_today_stats())
-print(cash_calculator.get_today_cash_remained('rub'))
-# должно напечататься
-# На сегодня осталось 555 руб
