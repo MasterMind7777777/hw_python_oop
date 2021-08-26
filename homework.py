@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import List
+from typing import List, Optional
 # import requests
 # from bs4 import BeautifulSoup as bs
 
@@ -51,9 +51,9 @@ class CashCalculator(Calculator):
     USD_RATE = 73.72
     EURO_RATE = 86.60
 
-    def __init__(self, limit: float, records: List['Record'] = []) -> None:
-        super().__init__(limit)
-        self.records = records
+    def __init__(self, limit: float) -> None:
+        self.limit = limit
+        self.records = []
 
     def converter(self, currencyTo: str, inpAmount: float) -> float:
         """Converst rubles to dollars or euro using information
@@ -112,8 +112,8 @@ class CaloriesCalculator(Calculator):
     """Representing calculator for
        managing calories"""
     def __init__(self, limit: float, records: List['Record'] = []) -> None:
-        super().__init__(limit)
-        self.records = records
+        self.limit = limit
+        self.records = []
 
     def get_calories_remained(self) -> str:
         """Shows how many calories are stil left to eat"""
@@ -130,10 +130,12 @@ class CaloriesCalculator(Calculator):
 class Record:
     """Class representing single record
        with fields: amount, comment, date"""
+    date = dt.datetime.now().date()
+
     def __init__(self,
                  amount: float,
                  comment: str,
-                 date: dt.date = None) -> None:
+                 date: Optional[str] = None) -> None:
         self.amount = amount
         self.comment = comment
         if type(date) is str:
@@ -144,48 +146,36 @@ class Record:
         self.date = date
 
 
-cash_calculator = CashCalculator(1000)
+cash_calculator = CashCalculator(6000)
+cash_calculator2 = CashCalculator(2000)
 cal_calculator = CaloriesCalculator(2000)
 
 # дата в параметрах не указана,
 # так что по умолчанию к записи
 # должна автоматически добавиться сегодняшняя дата
 cash_calculator.add_record(Record(amount=500, comment='кофе'))
-cash_calculator.add_record(Record(amount=-1, comment='чай'))
-cash_calculator.add_record(Record(amount=-1, comment='чай'))
+cash_calculator2.add_record(Record(amount=500, comment='кофе2'))
+cash_calculator.add_record(Record(amount=0, comment='чай'))
+cash_calculator.add_record(Record(amount=0, comment='чай'))
 # и к этой записи тоже дата должна добавиться автоматически
 cash_calculator.add_record(Record(amount=2500, comment='Серёге за обед'))
 # а тут пользователь указал дату, сохраняем её
 cash_calculator.add_record(Record(amount=3000,
                                   comment='бар в Танин др',
-                                  date='08.11.2019'))
+                                  date='26.08.2021'))
 
-# тест недельного отёта
+# week
 cash_calculator.add_record(Record(amount=100,
                                   comment='кофе',
-                                  date='17.08.2021'))
+                                  date='24.08.2021'))
 cash_calculator.add_record(Record(amount=100,
                                   comment='кофе',
-                                  date='18.08.2021'))
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='19.08.2021'))
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='20.08.2021'))
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='21.08.2021'))
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='22.08.2021'))
-cash_calculator.add_record(Record(amount=100,
-                                  comment='кофе',
-                                  date='23.08.2021'))
+                                  date='24.08.2021'))
 
+# 3
 
-print(cash_calculator.get_today_cash_remained('usd'))
 print(cash_calculator.get_week_stats())
-
+print(cash_calculator.get_today_stats())
+print(cash_calculator.get_today_cash_remained('rub'))
 # должно напечататься
 # На сегодня осталось 555 руб
