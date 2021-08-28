@@ -1,6 +1,6 @@
 import datetime as dt  # for data type to be used
 # for showing type of the variable
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple
 
 
 class Calculator():
@@ -58,10 +58,10 @@ class CashCalculator(Calculator):
     USD_RATE = 60.00
     EURO_RATE = 70.00
     RUB_RATE = 1.00
-    currencys: Dict[str, list[Union[str, float]]] = {
-        'eur': ['Euro', EURO_RATE],
-        'usd': ['USD', USD_RATE],
-        'rub': ['руб', RUB_RATE]}
+    currencys: Dict[str, Tuple[str, float]] = {
+        'eur': ('Euro', EURO_RATE),
+        'usd': ('USD', USD_RATE),
+        'rub': ('руб', RUB_RATE)}
 
     def __init__(self, limit: float) -> None:
         self.limit = limit
