@@ -1,5 +1,6 @@
 import datetime as dt  # for data type to be used
-from typing import Dict, List, Optional  # for showing type of the variable
+# for showing type of the variable
+from typing import Dict, List, Optional, Union
 
 
 class Calculator():
@@ -57,9 +58,10 @@ class CashCalculator(Calculator):
     USD_RATE = 60.00
     EURO_RATE = 70.00
     RUB_RATE = 1.00
-    currencys: Dict[str, list[str, float]] = {'eur': ['Euro', EURO_RATE],
-                                              'usd': ['USD', USD_RATE],
-                                              'rub': ['руб', RUB_RATE]}
+    currencys: Dict[str, list[Union[str, float]]] = {
+        'eur': ['Euro', EURO_RATE],
+        'usd': ['USD', USD_RATE],
+        'rub': ['руб', RUB_RATE]}
 
     def __init__(self, limit: float) -> None:
         self.limit = limit
@@ -81,12 +83,6 @@ class CashCalculator(Calculator):
         # Convert currency and rename for better look.
         # Raises error if gets unknown currency.
         try:
-            currencys_out = self.currencys[currency]
-            cur_out = currencys_out[1]
-            remaining = self.converter(remaining, cur_out)
-            debt = self.converter(debt, cur_out)
-            currency_name = currencys_out[0]
-        except TypeError:
             currencys_out = self.currencys[currency]
             cur_out = currencys_out[1]
             remaining = self.converter(remaining, cur_out)
