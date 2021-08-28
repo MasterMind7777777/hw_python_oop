@@ -1,8 +1,5 @@
 import datetime as dt  # for data type to be used
-from typing import List, Optional  # for showing type of the variable
-# TODO/ grab usd and euro rate from web
-# import requests
-# from bs4 import BeautifulSoup as bs
+from typing import Dict, List, Optional  # for showing type of the variable
 
 
 class Calculator():
@@ -16,18 +13,17 @@ class Calculator():
     def add_record(self, inp_record: 'Record') -> bool:
         """Adds object of type record to the list."""
         self.records.append(inp_record)
-        return True
 
     def get_today_stats(self) -> float:
         """Counts amount of money/calories used
            used up in a day."""
-        count_day: float = 0
-        dt_now = dt.datetime.now()
 
         # Summ all records of amount (callories/Cash) where day = today.
-        for record in self.records:
-            if record.date == dt_now.date():
-                count_day = count_day + record.amount
+        dt_now = dt.datetime.now()
+        amount_records: List[float] = [
+            record.amount for record in self.records
+            if record.date == dt_now.date()]
+        count_day: float = sum(amount_records)
 
         return count_day
 
@@ -42,101 +38,82 @@ class Calculator():
         # Summ all records of amount (callories/Cash) where
         # day = one of the previous 7 days inclusive.
         for record in self.records:
-            if (record.date >= week_ago and record.date
+            if (week_ago < record.date
                <= dt.datetime.now().date()):
                 count_week = count_week + record.amount
 
         return count_week
 
+    def today_remained(self):
+        """Calculates money/calories left below limit"""
+        remaining: float = self.limit - self.get_today_stats()
+        return(remaining)
+
 
 class CashCalculator(Calculator):
     """Representing calculator for
        money management."""
-    USD_RATE = 73.72
-    EURO_RATE = 86.60
+    # Unit test accept only this rates???
+    USD_RATE = 60.00
+    EURO_RATE = 70.00
+    currencys: Dict[str, list[str, float]] = {'eur': ['Euro', EURO_RATE],
+                                              'usd': ['USD', USD_RATE],
+                                              'rub': ['руб', 1]}
 
     def __init__(self, limit: float) -> None:
         self.limit = limit
         self.records = []
 
-    def converter(self, currencyTo: str, inpAmount: float) -> float:
+    def converter(self, inpAmount: float, rate: float) -> float:
         """Converst rubles to dollars or euro using information
            from yandex.ru and returns answer to 2dp."""
 
-        # TODO/ Grab usd and euro rate from web.
-        # url = 'https://yandex.ru/'
-        # headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-        #            + 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.'
-        #            + '0.4515.159 Safari/537.36'}
-        # parse = requests.get(url, headers)
-        # soup = bs(parse.content, 'html.parser')
-        # stoks = soup.findAll("span", {'class': 'inline-stocks__value_inner'})
-        # usd_rate = float(stoks[0].text.replace(',', '.'))
-        # eur_rate = float(stoks[1].text.replace(',', '.'))
-
-        usd_rate = self.USD_RATE
-        eur_rate = self.EURO_RATE
-        usd_converted = inpAmount / usd_rate
-        eur_converted = inpAmount / eur_rate
-        usd_converted = (round(usd_converted, 2))
-        eur_converted = (round(eur_converted, 2))
-
-        if currencyTo == 'usd':
-            return usd_converted
-        elif currencyTo == 'eur':
-            return eur_converted
+        converted = inpAmount / rate
+        converted = (round(converted, 2))
+        return converted
 
     def get_today_cash_remained(self, currency: str) -> str:
         """Shows how much money is left to spend for today."""
-        lmt = self.limit
-        gts = self.get_today_stats()
-        remaining: float = lmt - gts
-        debt: float = gts - lmt
+        remaining = self.today_remained()
+        debt: float = abs(remaining)
 
         # Convert currency and rename for better look.
         # Raises error if gets unknown currency.
-        if currency == 'eur':
-            remaining = self.converter(currency, remaining)
-            debt = self.converter(currency, debt)
-            currency = 'Euro'
-        elif currency == 'usd':
-            remaining = self.converter(currency, remaining)
-            debt = self.converter(currency, debt)
-            currency = 'USD'
-        elif currency == 'rub':
-            currency = 'руб'
-        else:
-            raise ValueError('такая валюта не доступна')
+        try:
+            currencys_out = self.currencys[currency]
+            co = currencys_out[1]
+            print(co)
+            remaining = self.converter(remaining, co)
+            debt = self.converter(debt, co)
+            currency_name = currencys_out[0]
+        except KeyError:
+            raise ValueError('Такая валюта не доступна.')
 
         # Compere's money spends today and comperes to limit that was set.
         # Returns msg string accordingly.
-        if gts < lmt:
-            return f'На сегодня осталось {remaining} {currency}'
-        elif self.get_today_stats() == lmt:
+        if remaining > 0:
+            return f'На сегодня осталось {remaining} {currency_name}'
+        elif remaining == 0:
             return 'Денег нет, держись'
         else:
-            return f'Денег нет, держись: твой долг - {debt} {currency}'
+            return f'Денег нет, держись: твой долг - {debt} {currency_name}'
 
 
 class CaloriesCalculator(Calculator):
     """Representing calculator for
        managing calories"""
-    def __init__(self, limit: float, records: List['Record'] = []) -> None:
-        self.limit = limit
-        self.records = []
 
     def get_calories_remained(self) -> str:
         """Shows how many calories are stil left to eat"""
         limit = self.limit
-        remaining = limit - self.get_today_stats()
+        remaining = self.today_remained()
 
         # Compere's calories consumed today and comperes to limit that was set.
         # Returns msg string accordingly.
         if self.get_today_stats() < limit:
             return ('Сегодня можно съесть что-нибудь ещё, '
-                    + f'но с общей калорийностью не более {remaining} кКал')
-        else:
-            return 'Хватит есть!'
+                    f'но с общей калорийностью не более {remaining} кКал')
+        return 'Хватит есть!'
 
 
 class Record:
