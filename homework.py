@@ -86,6 +86,12 @@ class CashCalculator(Calculator):
             remaining = self.converter(remaining, cur_out)
             debt = self.converter(debt, cur_out)
             currency_name = currencys_out[0]
+        except TypeError:
+            currencys_out = self.currencys[currency]
+            cur_out = currencys_out[1]
+            remaining = self.converter(remaining, cur_out)
+            debt = self.converter(debt, cur_out)
+            currency_name = currencys_out[0]
         except KeyError:
             raise ValueError('Такая валюта не доступна.')
 
