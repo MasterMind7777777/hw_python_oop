@@ -82,10 +82,9 @@ class CashCalculator(Calculator):
         # Raises error if gets unknown currency.
         try:
             currencys_out = self.currencys[currency]
-            co = currencys_out[1]
-            print(co)
-            remaining = self.converter(remaining, co)
-            debt = self.converter(debt, co)
+            cur_out = currencys_out[1]
+            remaining = self.converter(remaining, cur_out)
+            debt = self.converter(debt, cur_out)
             currency_name = currencys_out[0]
         except KeyError:
             raise ValueError('Такая валюта не доступна.')
