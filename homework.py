@@ -56,9 +56,10 @@ class CashCalculator(Calculator):
     # Unit test accept only this rates???
     USD_RATE = 60.00
     EURO_RATE = 70.00
+    RUB_RATE = 1.00
     currencys: Dict[str, list[str, float]] = {'eur': ['Euro', EURO_RATE],
                                               'usd': ['USD', USD_RATE],
-                                              'rub': ['руб', 1]}
+                                              'rub': ['руб', RUB_RATE]}
 
     def __init__(self, limit: float) -> None:
         self.limit = limit
