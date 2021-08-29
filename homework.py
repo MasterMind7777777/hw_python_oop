@@ -31,8 +31,9 @@ class Calculator():
     def get_week_stats(self):
         """Counts amount of money/calories used
            used up in a week."""
-
-        week_ago: dt.datetime = dt.datetime.now() - dt.timedelta(days=7)
+        dt_now = dt.datetime.now()
+        dt_now_date = dt_now.date()
+        week_ago: dt.datetime = dt_now - dt.timedelta(days=7)
         week_ago: dt.date = week_ago.date()
         count_week: float = 0
 
@@ -40,7 +41,7 @@ class Calculator():
         # day = one of the previous 7 days inclusive.
         for record in self.records:
             if (week_ago < record.date
-               <= dt.datetime.now().date()):
+               <= dt_now_date):
                 count_week = count_week + record.amount
 
         return count_week
@@ -62,10 +63,6 @@ class CashCalculator(Calculator):
         'eur': ('Euro', EURO_RATE),
         'usd': ('USD', USD_RATE),
         'rub': ('руб', RUB_RATE)}
-
-    def __init__(self, limit: float) -> None:
-        self.limit = limit
-        self.records = []
 
     def converter(self, inpAmount: float, rate: float) -> float:
         """Converst rubles to dollars or euro using information
@@ -107,12 +104,11 @@ class CaloriesCalculator(Calculator):
 
     def get_calories_remained(self) -> str:
         """Shows how many calories are stil left to eat"""
-        limit = self.limit
         remaining = self.today_remained()
 
         # Compere's calories consumed today and comperes to limit that was set.
         # Returns msg string accordingly.
-        if self.get_today_stats() < limit:
+        if remaining > 0:
             return ('Сегодня можно съесть что-нибудь ещё, '
                     f'но с общей калорийностью не более {remaining} кКал')
         return 'Хватит есть!'
